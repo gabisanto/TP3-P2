@@ -7,22 +7,20 @@ from funciones import AnalizadorSUBE
 
 def mostrar_menu() -> None:
     """
-    Muestra las opciones disponibles para el usuario.
+    Muestra las opciones de análisis disponibles.
     """
     print("\n--- MENÚ PRINCIPAL ---")
-    print("1. Mostrar información general del dataset")
-    print("2. Mostrar información después de la limpieza")
-    print("3. Mostrar métricas generales")
-    print("4. Mostrar métricas por tipo de transporte")
-    print("5. Mostrar comparación anual")
-    print("6. Generar gráficos")
+    print("1. Mostrar métricas generales")
+    print("2. Mostrar métricas por tipo de transporte")
+    print("3. Mostrar comparación anual")
+    print("4. Generar gráficos")
     print("0. Salir")
 
 
 def main() -> None:
     """
     Función principal del programa.
-    Carga y prepara los datos, y luego muestra un menú.
+    Prepara los datos y permite consultar los resultados.
     """
     carpeta_proyecto = Path(__file__).resolve().parent
     carpeta_crudo = carpeta_proyecto / "Crudo"
@@ -36,11 +34,20 @@ def main() -> None:
     try:
         print("Iniciando análisis de datos SUBE...")
 
+        # Carga de los archivos originales.
         analizador.leer_archivos()
+
+        # Información antes de realizar la limpieza.
+        analizador.mostrar_informacion_inicial()
+
+        # Limpieza y transformación automática.
         analizador.limpiar_y_transformar()
         analizador.agregar_columna_normalizada()
 
-        print("Los datos fueron cargados correctamente.")
+        # Información posterior al procesamiento.
+        analizador.mostrar_informacion_final()
+
+        print("\nLos datos fueron preparados correctamente.")
 
         opcion = ""
 
@@ -49,16 +56,10 @@ def main() -> None:
             opcion = input("Seleccione una opción: ").strip()
 
             if opcion == "1":
-                analizador.mostrar_informacion_inicial()
-
-            elif opcion == "2":
-                analizador.mostrar_informacion_final()
-
-            elif opcion == "3":
                 metricas = analizador.calcular_metricas()
                 analizador.mostrar_metricas(metricas)
 
-            elif opcion == "4":
+            elif opcion == "2":
                 metricas_transporte = (
                     analizador.calcular_metricas_por_transporte()
                 )
@@ -66,13 +67,13 @@ def main() -> None:
                 print("\n--- MÉTRICAS POR TIPO DE TRANSPORTE ---")
                 print(metricas_transporte)
 
-            elif opcion == "5":
+            elif opcion == "3":
                 variacion_anual = analizador.calcular_variacion_anual()
 
                 print("\n--- COMPARACIÓN ANUAL ---")
                 print(variacion_anual)
 
-            elif opcion == "6":
+            elif opcion == "4":
                 analizador.generar_graficos()
 
             elif opcion == "0":
@@ -81,7 +82,7 @@ def main() -> None:
             else:
                 print(
                     "\nOpción inválida. "
-                    "Ingrese un número entre 0 y 6."
+                    "Ingrese un número entre 0 y 4."
                 )
 
     except FileNotFoundError as error:
