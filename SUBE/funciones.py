@@ -261,6 +261,7 @@ class AnalizadorSUBE:
         mediana_diaria = usos_diarios["cantidad"].median()
         maximo_diario = usos_diarios["cantidad"].max()
         minimo_diario = usos_diarios["cantidad"].min()
+        coeficiente_variacion = (np.std(usos_diarios["cantidad"]) / np.mean(usos_diarios["cantidad"]))
 
         fecha_maximo = usos_diarios.loc[
             usos_diarios["cantidad"].idxmax(),
@@ -283,7 +284,8 @@ class AnalizadorSUBE:
             "fecha_fin": usos_diarios["fecha"].max(),
             "total_usos": usos_diarios["cantidad"].sum(),
             "cantidad_registros": len(self.df),
-            "cantidad_dias": len(usos_diarios)
+            "cantidad_dias": len(usos_diarios),
+            "coeficiente_variacion": coeficiente_variacion
         }
 
         return metricas
@@ -316,6 +318,8 @@ class AnalizadorSUBE:
             f"Mediana diaria de usos: "
             f"{metricas['mediana_diaria']:,.2f}"
         )
+        print(f"Coeficiente de variación: "
+            f"{metricas['coeficiente_variacion']:.3f}")
         print(
             f"Máximo diario de usos: "
             f"{metricas['maximo_diario']:,.0f}"
