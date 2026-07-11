@@ -669,7 +669,17 @@ class AnalizadorSUBE:
         self.grafico_tipo_transporte()
         self.grafico_histograma_viajes_diarios()
 
+        print("\nGráficos generados correctamente.")
+        
+        print("Se generaron los siguientes gráficos:")
+        print("- Evolución mensual")
+        print("- Promedio por día de la semana")
+        print("- Distribución geográfica")
+        print("- Ranking de provincias")
+        print("- Tipo de transporte")
+        print("- Histograma de usos diarios")
+
         print(
-            f"\nLos gráficos fueron guardados en: "
-            f"{self.carpeta_graficos.resolve()}"
+            "\nUbicación de los archivos:"
+            f"\n{self.carpeta_graficos.resolve()}"
         )
