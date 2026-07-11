@@ -443,12 +443,22 @@ class AnalizadorSUBE:
             print(f"Total de usos: {cantidad:,.0f}")
 
             if pd.isna(variacion):
-                print("Variación: no disponible (primer año analizado).")
-            else:
                 print(
-                    f"Variación respecto del año anterior: "
-                    f"{variacion:.2f}%"
+                    "Variación: no corresponde, "
+                    "porque no hay un año anterior para comparar."
                 )
+            elif variacion > 0:
+                print(
+                    f"Hubo un aumento del "
+                    f"{variacion:.2f}% respecto del año anterior."
+                )
+            elif variacion < 0:
+                print(
+                    f"Hubo una disminución del "
+                    f"{abs(variacion):.2f}% respecto del año anterior."
+                )
+            else:
+                print("No hubo variación respecto del año anterior.")
 
     def agregar_columna_normalizada(self) -> None:
         """
