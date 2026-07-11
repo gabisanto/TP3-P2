@@ -29,7 +29,7 @@ class AnalizadorSUBE:
             "dat-ab-usos-2025.csv"
         ]
 
-        # Lista de columnas necesarias para el análisis.
+        # Lista de columnas que necesitamos para el análisis
         self.columnas_utilizadas = [
             "DIA_TRANSPORTE",
             "AMBA",
@@ -40,7 +40,7 @@ class AnalizadorSUBE:
             "DATO_PRELIMINAR"
         ]
 
-        # Diccionario utilizado para renombrar columnas.
+        # Diccionario que utilizamos para renombrar columnas.
         self.renombres = {
             "DIA_TRANSPORTE": "fecha",
             "AMBA": "amba",
@@ -87,7 +87,7 @@ class AnalizadorSUBE:
                     low_memory=False
                 )
             except UnicodeDecodeError:
-                # Alternativa para archivos con otra codificación.
+                # alternativa para archivos con otra codificación.
                 df_anual = pd.read_csv(
                     ruta_archivo,
                     usecols=self.columnas_utilizadas,
@@ -127,22 +127,22 @@ class AnalizadorSUBE:
                 "Primero se deben leer los archivos con leer_archivos()."
             )
 
-        # Transformación 1: renombrar las columnas.
+        # Primera transformación: renombrar las columnas.
         self.df.rename(columns=self.renombres, inplace=True)
 
-        # Transformación 2: convertir la fecha a tipo datetime.
+        # Segunda transformación: convertir la fecha a tipo datetime.
         self.df["fecha"] = pd.to_datetime(
             self.df["fecha"],
             errors="coerce"
         )
 
-        # Transformación 3: convertir la cantidad a valor numérico.
+        # Tercera transformación: convertir la cantidad a valor numérico.
         self.df["cantidad"] = pd.to_numeric(
             self.df["cantidad"],
             errors="coerce"
         )
 
-        # Limpieza de espacios y unificación de mayúsculas.
+        # limpieza de espacios y unificación de mayúsculas
         columnas_texto = [
             "amba",
             "tipo_transporte",
@@ -159,29 +159,28 @@ class AnalizadorSUBE:
                 .str.upper()
             )
 
-        # unificamos CABA y CIUDAD AUTONOMA DE BUENOS AIRES
+        # unificación de las distintas denominaciones de CABA
         self.df["provincia"] = self.df["provincia"].replace({
             "CIUDAD AUTÓNOMA DE BUENOS AIRES": "C.A.B.A"
         })
 
-        # Eliminación de registros sin fecha o sin cantidad.
+        # Eliminación de registros sin fecha o cantidad.
         self.df.dropna(
             subset=["fecha", "cantidad"],
             inplace=True
         )
 
-        # Eliminación de registros con cantidades negativas.
+        # eliminación de registros con cantidades negativas
         self.df = self.df[self.df["cantidad"] >= 0].copy()
 
-        # Filtrado de datos preliminares.
+        # filtrado de datos preliminares
         self.df = self.df[
             self.df["dato_preliminar"] == "NO"
         ].copy()
 
-        # Creación de nuevas columnas.
+        # creación de nuevas columnas.
         self.df["anio"] = self.df["fecha"].dt.year
         self.df["mes_numero"] = self.df["fecha"].dt.month
-        self.df["mes"] = self.df["fecha"].dt.month_name(locale="Spanish")
         self.df["dia_semana_numero"] = self.df["fecha"].dt.dayofweek
 
         nombres_dias = {
@@ -198,7 +197,7 @@ class AnalizadorSUBE:
             "dia_semana_numero"
         ].map(nombres_dias)
 
-        # Nueva columna para diferenciar AMBA e interior.
+        # Nueva columna que muestra si es AMBA o interior.
         clasificacion_geografica = {
             "SI": "AMBA",
             "NO": "Interior"
@@ -208,7 +207,7 @@ class AnalizadorSUBE:
             clasificacion_geografica
         )
 
-        # Se eliminan filas que no pudieron clasificarse.
+        # se eliminan filas que no pudieron clasificarse.
         self.df.dropna(subset=["zona"], inplace=True)
 
         return self.df
@@ -527,7 +526,7 @@ class AnalizadorSUBE:
         Genera un gráfico de barras con el promedio de usos
         según el día de la semana.
         """
-        viajes_por_fecha = (
+        usos_por_fecha = (
             self.df
             .groupby(
                 ["fecha", "dia_semana"],
@@ -537,7 +536,7 @@ class AnalizadorSUBE:
         )
 
         promedio_dias = (
-            viajes_por_fecha
+            usos_por_fecha
             .groupby("dia_semana")["cantidad"]
             .mean()
             .reindex(self.orden_dias)
@@ -589,7 +588,7 @@ class AnalizadorSUBE:
         de usos registrados.
         """
         ranking = (
-            self.df
+            self.df[self.df["provincia"] != "JN"]
             .groupby("provincia")["cantidad"]
             .sum()
             .sort_values(ascending=False)
@@ -601,7 +600,8 @@ class AnalizadorSUBE:
         ranking.plot(kind="barh")
 
         plt.title(
-            f"{cantidad} provincias con mayor cantidad de usos SUBE"
+            f"{cantidad} provincias con mayor cantidad de usos SUBE "
+            "(sin incluir JN)"
         )
         plt.xlabel("Cantidad de usos")
         plt.ylabel("Provincia")
@@ -636,12 +636,12 @@ class AnalizadorSUBE:
         plt.savefig(ruta, dpi=300)
         plt.close()
 
-    def grafico_histograma_viajes_diarios(self) -> None:
+    def grafico_histograma_usos_diarios(self) -> None:
         """
         Genera un histograma para mostrar la distribución
         de los usos diarios.
         """
-        viajes_diarios = (
+        usos_diarios = (
             self.df
             .groupby("fecha")["cantidad"]
             .sum()
@@ -649,7 +649,7 @@ class AnalizadorSUBE:
 
         plt.figure(figsize=(10, 6))
         plt.hist(
-            viajes_diarios,
+            usos_diarios,
             bins=30,
             edgecolor="black"
         )
@@ -672,7 +672,7 @@ class AnalizadorSUBE:
         self.grafico_distribucion_geografica()
         self.grafico_ranking_provincias()
         self.grafico_tipo_transporte()
-        self.grafico_histograma_viajes_diarios()
+        self.grafico_histograma_usos_diarios()
 
         print("\nGráficos generados correctamente.")
         
