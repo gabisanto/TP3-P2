@@ -275,6 +275,8 @@ class AnalizadorSUBE:
             "minimo_diario": minimo_diario,
             "fecha_maximo": fecha_maximo,
             "fecha_minimo": fecha_minimo,
+            "fecha_inicio": usos_diarios["fecha"].min(),
+            "fecha_fin": usos_diarios["fecha"].max(),
             "total_usos": usos_diarios["cantidad"].sum(),
             "cantidad_registros": len(self.df),
             "cantidad_dias": len(usos_diarios)
@@ -287,6 +289,9 @@ class AnalizadorSUBE:
         Muestra las métricas estadísticas en pantalla.
         """
         print("\n--- MÉTRICAS GENERALES ---")
+        print(f"Período analizado: "
+            f"{metricas['fecha_inicio'].date()} al "
+            f"{metricas['fecha_fin'].date()}")
         print(
             f"Registros analizados: "
             f"{metricas['cantidad_registros']:,}"
