@@ -68,10 +68,7 @@ def main() -> None:
                 print(metricas_transporte)
 
             elif opcion == "3":
-                variacion_anual = analizador.calcular_variacion_anual()
-
-                print("\n--- COMPARACIÓN ANUAL ---")
-                print(variacion_anual)
+                analizador.mostrar_variacion_anual()
 
             elif opcion == "4":
                 analizador.generar_graficos()

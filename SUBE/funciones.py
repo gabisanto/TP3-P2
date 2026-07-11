@@ -219,49 +219,65 @@ class AnalizadorSUBE:
         print("\nValores nulos:")
         print(self.df.isnull().sum())
 
-        print("\nTipos de transporte:")
-        print(self.df["tipo_transporte"].value_counts())
+        print("\nTotal de usos por tipo de transporte:")
+        usos_por_transporte = (
+            self.df
+            .groupby("tipo_transporte")["cantidad"]
+            .sum()
+            .sort_values(ascending=False)
+        )
+
+        print(usos_por_transporte)
+
+        print("\nEjemplo de cantidades normalizadas:")
+        print(
+            self.df[
+                ["cantidad", "cantidad_normalizada"]
+            ].head()
+    )
 
     def calcular_metricas(self) -> dict:
         """
-        Calcula métricas estadísticas sobre los viajes diarios.
-
-        Retorna:
-        Un diccionario con los principales resultados.
+        Calcula métricas estadísticas sobre los usos diarios
+        de la tarjeta SUBE y retorna un diccionario con los principales resultados.
         """
-        viajes_diarios = (
+        if self.df.empty:
+            raise ValueError(
+                "No hay datos disponibles para calcular las métricas."
+            )
+
+        usos_diarios = (
             self.df
             .groupby("fecha", as_index=False)["cantidad"]
             .sum()
+            .sort_values("fecha")
         )
 
-        # Tupla con métricas principales.
-        medidas_generales = (
-            viajes_diarios["cantidad"].mean(),
-            viajes_diarios["cantidad"].median(),
-            viajes_diarios["cantidad"].max(),
-            viajes_diarios["cantidad"].min()
-        )
+        promedio_diario = usos_diarios["cantidad"].mean()
+        mediana_diaria = usos_diarios["cantidad"].median()
+        maximo_diario = usos_diarios["cantidad"].max()
+        minimo_diario = usos_diarios["cantidad"].min()
 
-        fecha_maximo = viajes_diarios.loc[
-            viajes_diarios["cantidad"].idxmax(),
+        fecha_maximo = usos_diarios.loc[
+            usos_diarios["cantidad"].idxmax(),
             "fecha"
         ]
 
-        fecha_minimo = viajes_diarios.loc[
-            viajes_diarios["cantidad"].idxmin(),
+        fecha_minimo = usos_diarios.loc[
+            usos_diarios["cantidad"].idxmin(),
             "fecha"
         ]
 
         metricas = {
-            "promedio_diario": medidas_generales[0],
-            "mediana_diaria": medidas_generales[1],
-            "maximo_diario": medidas_generales[2],
-            "minimo_diario": medidas_generales[3],
+            "promedio_diario": promedio_diario,
+            "mediana_diaria": mediana_diaria,
+            "maximo_diario": maximo_diario,
+            "minimo_diario": minimo_diario,
             "fecha_maximo": fecha_maximo,
             "fecha_minimo": fecha_minimo,
-            "total_viajes": self.df["cantidad"].sum(),
-            "cantidad_registros": len(self.df)
+            "total_usos": usos_diarios["cantidad"].sum(),
+            "cantidad_registros": len(self.df),
+            "cantidad_dias": len(usos_diarios)
         }
 
         return metricas
@@ -271,18 +287,28 @@ class AnalizadorSUBE:
         Muestra las métricas estadísticas en pantalla.
         """
         print("\n--- MÉTRICAS GENERALES ---")
-        print(f"Registros analizados: {metricas['cantidad_registros']:,}")
-        print(f"Total de usos: {metricas['total_viajes']:,.0f}")
         print(
-            f"Promedio diario: "
+            f"Registros analizados: "
+            f"{metricas['cantidad_registros']:,}"
+        )
+        print(
+            f"Días analizados: "
+            f"{metricas['cantidad_dias']:,}"
+        )
+        print(
+            f"Total de usos: "
+            f"{metricas['total_usos']:,.0f}"
+        )
+        print(
+            f"Promedio diario de usos: "
             f"{metricas['promedio_diario']:,.2f}"
         )
         print(
-            f"Mediana diaria: "
+            f"Mediana diaria de usos: "
             f"{metricas['mediana_diaria']:,.2f}"
         )
         print(
-            f"Máximo diario: "
+            f"Máximo diario de usos: "
             f"{metricas['maximo_diario']:,.0f}"
         )
         print(
@@ -290,7 +316,7 @@ class AnalizadorSUBE:
             f"{metricas['fecha_maximo'].date()}"
         )
         print(
-            f"Mínimo diario: "
+            f"Mínimo diario de usos: "
             f"{metricas['minimo_diario']:,.0f}"
         )
         print(
@@ -344,6 +370,30 @@ class AnalizadorSUBE:
         )
 
         return totales_anuales
+    
+    def mostrar_variacion_anual(self) -> None:
+        """
+        Muestra la comparación anual de los usos de la tarjeta SUBE.
+        """
+        variacion_anual = self.calcular_variacion_anual()
+
+        print("\n--- COMPARACIÓN ANUAL ---")
+
+        for _, fila in variacion_anual.iterrows():
+            anio = int(fila["anio"])
+            cantidad = fila["cantidad"]
+            variacion = fila["variacion_porcentual"]
+
+            print(f"\nAño: {anio}")
+            print(f"Total de usos: {cantidad:,.0f}")
+
+            if pd.isna(variacion):
+                print("Variación: no disponible (primer año analizado).")
+            else:
+                print(
+                    f"Variación respecto del año anterior: "
+                    f"{variacion:.2f}%"
+                )
 
     def agregar_columna_normalizada(self) -> None:
         """
