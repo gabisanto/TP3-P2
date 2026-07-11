@@ -159,6 +159,11 @@ class AnalizadorSUBE:
                 .str.upper()
             )
 
+        # unificamos CABA y CIUDAD AUTONOMA DE BUENOS AIRES
+        self.df["provincia"] = self.df["provincia"].replace({
+            "CIUDAD AUTÓNOMA DE BUENOS AIRES": "C.A.B.A"
+        })
+
         # Eliminación de registros sin fecha o sin cantidad.
         self.df.dropna(
             subset=["fecha", "cantidad"],
