@@ -331,9 +331,14 @@ class AnalizadorSUBE:
 
     def calcular_metricas_por_transporte(self) -> pd.DataFrame:
         """
-        Calcula el total, promedio y mediana por tipo de transporte.
+        Calcula estadísticas diarias para cada tipo de transporte.
         """
-        datos_diarios = (
+        if self.df.empty:
+            raise ValueError(
+                "No hay datos disponibles para calcular las métricas."
+            )
+
+        usos_diarios_por_transporte = (
             self.df
             .groupby(
                 ["fecha", "tipo_transporte"],
@@ -343,19 +348,64 @@ class AnalizadorSUBE:
         )
 
         metricas_transporte = (
-            datos_diarios
+            usos_diarios_por_transporte
             .groupby("tipo_transporte")["cantidad"]
             .agg(
-                total="sum",
-                promedio="mean",
-                mediana="median",
-                maximo="max",
-                minimo="min"
+                total_usos="sum",
+                promedio_diario="mean",
+                mediana_diaria="median",
+                maximo_diario="max",
+                minimo_diario="min",
+                dias_con_registros="count"
             )
-            .sort_values("total", ascending=False)
+            .sort_values("total_usos", ascending=False)
+        )
+
+        total_general = metricas_transporte["total_usos"].sum()
+
+        metricas_transporte["participacion_porcentual"] = (
+            metricas_transporte["total_usos"]
+            / total_general
+            * 100
         )
 
         return metricas_transporte
+    
+    def mostrar_metricas_por_transporte(self) -> None:
+        """
+        Muestra las métricas de cada tipo de transporte.
+        """
+        metricas = self.calcular_metricas_por_transporte()
+
+        print("\n--- MÉTRICAS POR TIPO DE TRANSPORTE ---")
+
+        for tipo_transporte, fila in metricas.iterrows():
+            print(f"\nTipo de transporte: {tipo_transporte}")
+            print(f"Total de usos: {fila['total_usos']:,.0f}")
+            print(
+                f"Participación sobre el total: "
+                f"{fila['participacion_porcentual']:.2f}%"
+            )
+            print(
+                f"Promedio diario: "
+                f"{fila['promedio_diario']:,.2f}"
+            )
+            print(
+                f"Mediana diaria: "
+                f"{fila['mediana_diaria']:,.2f}"
+            )
+            print(
+                f"Máximo diario: "
+                f"{fila['maximo_diario']:,.0f}"
+            )
+            print(
+                f"Mínimo diario: "
+                f"{fila['minimo_diario']:,.0f}"
+            )
+            print(
+                f"Días con registros: "
+                f"{int(fila['dias_con_registros'])}"
+            )
 
     def calcular_variacion_anual(self) -> pd.DataFrame:
         """

@@ -60,12 +60,7 @@ def main() -> None:
                 analizador.mostrar_metricas(metricas)
 
             elif opcion == "2":
-                metricas_transporte = (
-                    analizador.calcular_metricas_por_transporte()
-                )
-
-                print("\n--- MÉTRICAS POR TIPO DE TRANSPORTE ---")
-                print(metricas_transporte)
+                analizador.mostrar_metricas_por_transporte()
 
             elif opcion == "3":
                 analizador.mostrar_variacion_anual()
