@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 
 from funciones import AnalizadorSUBE
+import ver_data as vd
 
 
 def mostrar_menu() -> None:
@@ -14,6 +15,7 @@ def mostrar_menu() -> None:
     print("2. Mostrar métricas por tipo de transporte")
     print("3. Mostrar comparación anual")
     print("4. Generar gráficos")
+    print("5. Mostrar gráficos")
     print("0. Salir")
 
 
@@ -67,6 +69,9 @@ def main() -> None:
 
             elif opcion == "4":
                 analizador.generar_graficos()
+
+            elif opcion == "5":
+                vd.seleccionar_y_mostrar_png()
 
             elif opcion == "0":
                 print("\nPrograma finalizado.")
